@@ -1,8 +1,16 @@
 # QGIS MongoDB Loader
 
+#### Installation
+
+Use the QGIS Plugins menu to install the MongoDB plugin.
+
 #### Description
 
 The MongoDB Loader allows a user to connect to a MongoDB using QGIS.
+
+#### Dependencies
+
+```pymongo, json, ast```
 
 #### Modify the GUI
 
@@ -20,8 +28,11 @@ The MongoDB Loader allows a user to connect to a MongoDB using QGIS.
 	```pyuic4 -o ui_loadMongoDB_dialog_base.py loadMongoDB_dialog_base.ui```
 	
 	(If the ```pyuic4``` does not work, run ```brew install pyqt``` in the terminal)
+	
 
-#### Dependencies
+#### License
 
-```pymongo, json, ast```
+qgis-mongodb-plugin is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+
+Copyright © 2010-2014 Pirmin Kalberer & Mathias Walker, Sourcepole AG
 
