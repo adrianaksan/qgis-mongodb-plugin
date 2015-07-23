@@ -3,10 +3,10 @@
 /***************************************************************************
  loadMongoDB
                                  A QGIS plugin
- This plugin loads enclosures from MongoDB
+ This plugin loads layers from MongoDB
                              -------------------
         begin                : 2014-09-09
-        copyright            : (C) 2014 by Adrian
+        copyright            : (C) 2014 by Adrian Aksan
         email                : adrian.aksan@gmail.com
         git sha              : $Format:%H$
  ***************************************************************************/
