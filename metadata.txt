@@ -1,0 +1,31 @@
+[general]
+name=Load MongoDB Layers
+qgisMinimumVersion=2.0
+description=Load Points, Linestrings and Polygons from MongoDB
+version=1.0
+author=Adrian Aksan (Special thanks to Guillame de Boyer)
+email=adrian.aksan@gmail.com
+
+# End of mandatory metadata
+
+# Optional items:
+
+# Uncomment the following line and add your changelog:
+changelog=1.0
+	- Load Points, Linestrings and Polygons from MongoDB
+	- Saves user’s previous selection in cache.txt file
+
+
+# Tags are comma separated with spaces allowed
+tags=mongodb, mongo, loader
+
+homepage=
+tracker=
+repository=https://github.com/adrianaksan/qgis-mongodb-plugin
+icon=icon.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
