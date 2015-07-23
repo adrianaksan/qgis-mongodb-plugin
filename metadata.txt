@@ -11,16 +11,16 @@ email=adrian.aksan@gmail.com
 # Optional items:
 
 # Uncomment the following line and add your changelog:
-changelog=1.0
-	- Load Points, Linestrings and Polygons from MongoDB
-	- Saves user’s previous selection in cache.txt file
+#changelog=1.0
+
+about=Load Points, Linestrings and Polygons from MongoDB
 
 
 # Tags are comma separated with spaces allowed
 tags=mongodb, mongo, loader
 
 homepage=
-tracker=
+tracker=https://github.com/adrianaksan/qgis-mongodb-plugin/issues
 repository=https://github.com/adrianaksan/qgis-mongodb-plugin
 icon=icon.png
 # experimental flag
