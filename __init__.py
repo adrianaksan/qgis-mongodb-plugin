@@ -7,7 +7,7 @@
                              -------------------
         begin                : 2014-09-09
         copyright            : (C) 2014 by Adrian
-        email                : adrian.aksan@vocus.com.au
+        email                : adrian.aksan@gmail.com
         git sha              : $Format:%H$
  ***************************************************************************/
 
