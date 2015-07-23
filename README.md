@@ -23,7 +23,7 @@ my.server.com.au
 geos 
 geom
 
-If the connection is successful, you should see a list of your collections that contain geometry with the geometry type. To load the collection, simply select the collection and click LOAD. Under the settings tab you can also VIEW all of the attribute in your collection. After viewing your attributes select an attribute and click DISTINCT. This will display a list of distinct value for that attribute. To load your mongoDB layer using a specific attribute simply click SET. 
+If the connection is successful, you should see a list of your collections that contain geometry with the geometry type. To load the collection, simply select the collection and click LOAD. Under the settings tab you can also VIEW all of the attributes in your collection. After viewing your attributes, select an attribute and click DISTINCT. This will display a list of distinct values for that attribute. To load your mongoDB layer using a specific attribute simply click SET. 
 
 Now go back to the CONNECTION tab and tick the checkbox and select the field from the drop down list that you would like to load.
 	
