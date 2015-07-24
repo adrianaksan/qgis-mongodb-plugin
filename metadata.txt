@@ -2,7 +2,7 @@
 name=Load MongoDB Layers
 qgisMinimumVersion=2.0
 description=Load Points, Linestrings and Polygons from MongoDB
-version=1.2.2
+version=1.2.3
 author=Adrian Aksan (Special thanks to Guillame de Boyer)
 email=adrian.aksan@gmail.com
 
