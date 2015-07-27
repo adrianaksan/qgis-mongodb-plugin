@@ -11,9 +11,19 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 # Initialize Qt resources from file resources.py
-import resources_rc, os.path, pymongo, json
+import resources_rc, os.path
 # Import the code for the dialog
 from loadMongoDB_dialog import loadMongoDBDialog
+
+# test requirements
+try:
+    import json
+
+except ImportError as e:
+    QMessageBox.critical(iface.mainWindow(),
+                         "Missing module",
+                         "Json module is required",
+                         QMessageBox.Ok)
 
 class loadMongoDB:
     """QGIS Plugin Implementation."""

@@ -9,21 +9,50 @@
  */
 """
 
-import os, sys, ast
+import os, sys
 from PyQt4.Qt import *
 from PyQt4 import QtGui, uic
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from ui_loadMongoDB_dialog_base import Ui_loadMongoDBDialogBase
-from pymongo import MongoClient
 from qgis.core import *
 import qgis.utils
 from PyQt4.QtCore import QVariant
-from osgeo import ogr
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'loadMongoDB_dialog_base.ui'))
+
+
+# test requirements
+try:
+    from pymongo import MongoClient
+
+except ImportError as e:
+    QMessageBox.critical(iface.mainWindow(),
+                         "Missing module",
+                         "Pymongo module is required",
+                         QMessageBox.Ok)
+
+# test requirements
+try:
+    import ast
+
+except ImportError as e:
+    QMessageBox.critical(iface.mainWindow(),
+                         "Missing module",
+                         "Ast module is required",
+                         QMessageBox.Ok)
+
+# test requirements
+try:
+    import json
+
+except ImportError as e:
+    QMessageBox.critical(iface.mainWindow(),
+                         "Missing module",
+                         "Json module is required",
+                         QMessageBox.Ok)
 
 
 class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
@@ -36,7 +65,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
         # self.<objectname>, and you can use autoconnect slots - see
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
-        QtGui.QDialog.__init__(self, parent, Qt.WindowStaysOnTopHint)
+        QtGui.QDialog.__init__(self, parent, Qt.WindowMinimizeButtonHint)
 
         self.ui = Ui_loadMongoDBDialogBase()
         self.ui.setupUi(self)

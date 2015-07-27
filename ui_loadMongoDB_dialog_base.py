@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'loadMongoDB_dialog_base.ui'
 #
-# Created: Wed Jul 15 20:36:43 2015
-#      by: PyQt4 UI code generator 4.11.1
+# Created: Sun Jul 26 14:04:46 2015
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +26,14 @@ except AttributeError:
 class Ui_loadMongoDBDialogBase(object):
     def setupUi(self, loadMongoDBDialogBase):
         loadMongoDBDialogBase.setObjectName(_fromUtf8("loadMongoDBDialogBase"))
-        loadMongoDBDialogBase.resize(689, 489)
+        loadMongoDBDialogBase.resize(689, 487)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(loadMongoDBDialogBase.sizePolicy().hasHeightForWidth())
+        loadMongoDBDialogBase.setSizePolicy(sizePolicy)
+        loadMongoDBDialogBase.setMinimumSize(QtCore.QSize(689, 487))
+        loadMongoDBDialogBase.setMaximumSize(QtCore.QSize(689, 487))
         self.tabWidget = QtGui.QTabWidget(loadMongoDBDialogBase)
         self.tabWidget.setEnabled(True)
         self.tabWidget.setGeometry(QtCore.QRect(10, 10, 671, 471))
