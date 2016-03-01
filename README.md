@@ -19,9 +19,12 @@ The Load MongoDB Layer plugin allows you to quickly and easily load Point, Lines
 To load the layer simply type the your mongo db server name, db name, geometry field name and click CONNECT.
 
 Example:
-my.server.com.au 
-geos 
-geom
+
+- Server: my.server.com.au 
+- Database: geos 
+- Geometry field: geom
+
+Note: this assumes that you have your geometry in the "geom" property of each entry in the collection (they need tobe valid geojson).
 
 If the connection is successful, you should see a list of your collections that contain geometry with the geometry type. To load the collection, simply select the collection and click LOAD. Under the settings tab you can also VIEW all of the attributes in your collection. After viewing your attributes, select an attribute and click DISTINCT. This will display a list of distinct values for that attribute. To load your mongoDB layer using a specific attribute simply click SET. 
 

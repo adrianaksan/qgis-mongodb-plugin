@@ -19,6 +19,7 @@ from ui_loadMongoDB_dialog_base import Ui_loadMongoDBDialogBase
 from qgis.core import *
 import qgis.utils
 from PyQt4.QtCore import QVariant
+from django.utils.encoding import smart_str, smart_unicode
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'loadMongoDB_dialog_base.ui'))
@@ -149,6 +150,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
         # reset the list count and clear the list
         count = 0
         self.ui.listCol.clear()
+	self.geom_name = geom_name
 
         try:
             # establish a link to the mongoDB server
@@ -307,14 +309,16 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
         # our attribute container
         self.feature = QgsFeature()
         self.feature.initAttributes(len(self.attr_list_new))
+        
 
-        # if the user has selected a collection with point geometry
-        if self.geometry_name == "Point":
+        for value in self.ourList:
+            #print value[self.geom_name]["type"]
+            
+            # if the user has selected a collection with point geometry
+            if value[self.geom_name]["type"] == "Point":
 
-            for value in self.ourList:
-
-                x_coord = value["geom"]["coordinates"][0]
-                y_coord = value["geom"]["coordinates"][1]
+                x_coord = value[self.geom_name]["coordinates"][0]
+                y_coord = value[self.geom_name]["coordinates"][1]
 
                 self.populate_attributes(value)
 
@@ -327,35 +331,32 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                 self.ui.load_collection.setEnabled(False)
                 self.ui.listCol.setEnabled(False)
 
-            self.ui.listCol.setEnabled(True)
 
-        if self.geometry_name == "LineString":
+            if value[self.geom_name]["type"] == "LineString":
 
-            # used to store a list of poly lines
-            line_string = []
-
-            for value in self.ourList:
+                # used to store a list of poly lines
+                line_string = []
+                print value[self.geom_name]["type"]
 
                 # checks the geometry and only imports valid geometry
                 if self.check_valid_geom(value):
 
-                    for y in range(len(value["geom"]["coordinates"])):
+                    for y in range(len(value[self.geom_name]["coordinates"])):
 
                         # do not use unless needed, in case there is a multiLineString Object in the DB
                         """
-                        if value["geom"]["type"] != "LineString":
+                        if value["geometry"]["type"] != "LineString":
                             pass
 
                         else:
                         """
 
                         try:
-                            line_string.append(QgsPoint(value["geom"]["coordinates"][y][0], value["geom"]["coordinates"][y][1]))
-                            self.populate_attributes(value)
+                            line_string.append(QgsPoint(value[self.geom_name]["coordinates"][y][0], value[self.geom_name]["coordinates"][y][1]))
                         except:
-                            print "error on %s" %(str(value["reference"]))
+                            print "error on %s: %s" %(str(value["_id"]), str(sys.exc_info()[0]))
 
-
+                    self.populate_attributes(value)
                     self.feature.setGeometry(QgsGeometry.fromPolyline(line_string))
                     (res, outFeats) = self.dataLayer.dataProvider().addFeatures([self.feature])
                     del line_string[:]
@@ -366,28 +367,35 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                 self.ui.load_collection.setEnabled(False)
                 self.ui.listCol.setEnabled(False)
 
-            self.ui.listCol.setEnabled(True)
 
-        # this deals with Polygon geometry
-        if self.geometry_name == "Polygon":
+            # this deals with Polygon geometry
+            if value[self.geom_name]["type"] == "Polygon":
 
-            # store the polygon points
-            poly_shape = []
-
-            for value in self.ourList:
+                # store the polygon points
+                poly_shape = []
+                # store the line (a poly has multiple lines)
+                line_string = []
 
                 # checks the geometry and only imports valid geometry
                 if self.check_valid_geom(value):
 
-                    for y in range(len(value["geom"]["coordinates"][0])):
+                    for y in range(len(value[self.geom_name]["coordinates"][0])):
+                        try:
+                            line_string.append(QgsPoint(value[self.geom_name]["coordinates"][0][y][0], value[self.geom_name]["coordinates"][0][y][1]))
+                        except:
+                            print "error on %s: %s" %(str(value["_id"]), str(sys.exc_info()[0]))
+                            
+                    poly_shape.append(line_string);
 
-                        poly_line = QgsPoint(value["geom"]["coordinates"][0][y][0], value["geom"]["coordinates"][0][y][1])
-                        poly_shape.append(poly_line)
-
-                        self.populate_attributes(value)
-
-                    self.feature.setGeometry(QgsGeometry.fromPolygon([poly_shape]))
+                    self.populate_attributes(value)
+                    try:
+                        ps = QgsGeometry.fromPolygon(poly_shape)
+                        self.feature.setGeometry(ps)
+                    except:
+                        print "error on %s: %s" %(str(value["_id"]), str(sys.exc_info()[0]))
+                    
                     (res, outFeats) = self.dataLayer.dataProvider().addFeatures([self.feature])
+                    del line_string[:]
                     del poly_shape[:]
 
                     # update the progress bar
@@ -396,6 +404,42 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                     self.ui.load_collection.setEnabled(False)
                     self.ui.listCol.setEnabled(False)
 
+            # this deals with Polygon geometry
+            if value[self.geom_name]["type"] == "MultiPolygon":
+
+                # store the polygon points
+                poly_shape = []
+                # store the line (a poly has multiple lines)
+                line_string = []
+
+                # checks the geometry and only imports valid geometry
+                if self.check_valid_geom(value):
+
+                    for polys in range(len(value[self.geom_name]["coordinates"])):
+                        for y in range(len(value[self.geom_name]["coordinates"][polys])):
+                            try:
+                                line_string.append(QgsPoint(value[self.geom_name]["coordinates"][polys][y][0], value[self.geom_name]["coordinates"][polys][y][1]))
+                            except:
+                                print "error on %s: %s" %(str(value["_id"]), str(sys.exc_info()[0]))
+                        poly_shape.append(line_string);
+
+                    self.populate_attributes(value)
+                    try:
+                        ps = QgsGeometry.fromPolygon(poly_shape)
+                        self.feature.setGeometry(ps)
+                    except:
+                        print "error on %s: %s" %(str(value["_id"]), str(sys.exc_info()[0]))
+                    
+                    (res, outFeats) = self.dataLayer.dataProvider().addFeatures([self.feature])
+                    del line_string[:]
+                    del poly_shape[:]
+
+                    # update the progress bar
+                    self.event_progress()
+
+                    self.ui.load_collection.setEnabled(False)
+                    self.ui.listCol.setEnabled(False)
+                    
             self.ui.listCol.setEnabled(True)
 
         # commits the changes made to the layer and adds the layer to the map
@@ -411,11 +455,11 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
     # check for valid geometry
     def check_valid_geom(self, value):
 
-        if value.has_key("geom"):
+        if value.has_key(self.geom_name):
 
-            if value["geom"].has_key("coordinates"):
+            if value[self.geom_name].has_key("coordinates"):
 
-                if len(value["geom"]["coordinates"]) != 0:
+                if len(value[self.geom_name]["coordinates"]) != 0:
 
                     return True
 
@@ -471,9 +515,11 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                         index_pos += 1
 
             elif len(key) is 2:
-
-                self.feature[index_pos] = str(value[str(key[0][0])][str(key[1][0])])
-                index_pos +=1
+                try:
+                    self.feature[index_pos] = smart_str(value[str(key[0][0])][str(key[1][0])])
+                    index_pos +=1
+                except:
+                    index_pos +=1    
 
             else:
                 pass
