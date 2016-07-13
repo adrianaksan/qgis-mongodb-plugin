@@ -19,7 +19,8 @@ from ui_loadMongoDB_dialog_base import Ui_loadMongoDBDialogBase
 from qgis.core import *
 import qgis.utils
 from PyQt4.QtCore import QVariant
-from django.utils.encoding import smart_str, smart_unicode
+#from django.utils.encoding import smart_str, smart_unicode
+
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'loadMongoDB_dialog_base.ui'))
@@ -150,7 +151,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
         # reset the list count and clear the list
         count = 0
         self.ui.listCol.clear()
-	self.geom_name = geom_name
+        self.geom_name = geom_name
 
         try:
             # establish a link to the mongoDB server
@@ -516,7 +517,11 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
             elif len(key) is 2:
                 try:
-                    self.feature[index_pos] = smart_str(value[str(key[0][0])][str(key[1][0])])
+                    if value[str(key[0][0])][str(key[1][0])]:
+                        self.feature[index_pos] = str(value[str(key[0][0])][str(key[1][0])])
+                    else:
+                        self.feature[index_pos] = ""
+
                     index_pos +=1
                 except:
                     index_pos +=1    
