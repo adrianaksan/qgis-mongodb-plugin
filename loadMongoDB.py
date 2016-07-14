@@ -176,7 +176,7 @@ class loadMongoDB:
         if geom not in self.user_details["geom"]:
             self.user_details["geom"].append(geom)
 
-        json.dump(self.user_details, open(str(os.path.abspath(__file__ + "/../../")) + "/qgis_mongodb_loader/cache.txt",'w'))
+        json.dump(self.user_details, open(str(os.path.abspath(__file__ + "/../../")) + "/qgis-mongodb-loader/cache.txt",'w'))
 
 
     # attempt a connection to the server when the user presses "CONNECT"
@@ -209,7 +209,7 @@ class loadMongoDB:
     def load_file_cache(self):
 
         try:
-            self.user_details = json.load(open(str(os.path.abspath(__file__ + "/../../")) + "/qgis_mongodb_loader/cache.txt"))
+            self.user_details = json.load(open(str(os.path.abspath(__file__ + "/../../")) + "/qgis-mongodb-loader/cache.txt"))
 
         except:
             self.user_details = {"geom": [], "db": [], "checkbox": False, "servers": []}

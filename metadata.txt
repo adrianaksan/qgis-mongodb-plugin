@@ -2,7 +2,7 @@
 name=Load MongoDB Layers
 qgisMinimumVersion=2.0
 description=Load Points, Linestrings and Polygons from MongoDB
-version=1.3.0
+version=1.4.0
 author=Adrian Aksan (Special thanks to Guillame de Boyer)
 email=adrian.aksan@gmail.com
 
@@ -13,7 +13,7 @@ email=adrian.aksan@gmail.com
 # Uncomment the following line and add your changelog:
 #changelog=1.0
 
-about=Dependencies: pymongo, json, ast The Load MongoDB Layer plugin allows you to quickly and easily load Point, Linestring and Polygon geometry and their attributes into a shapefile. Unlike Mongoconnecter, no additional configuration is required and Polygon geometry is loadable. To load the layer simply type the your MongoDB server name, db name, geometry field name and click CONNECT. Example: my.server.com.au geos geom
+about=Dependencies: pymongo, json, ast The Load MongoDB Layer plugin allows you to quickly and easily load Point, Linestring, Polygon and MultiPolygon geometry and their attributes into a shapefile. Unlike Mongoconnecter, no additional configuration is required and Polygon geometry is loadable. To load the layer simply type the your MongoDB server name, db name, geometry field name and click CONNECT. Example: my.server.com.au geos geom
 
 # Tags are comma separated with spaces allowed
 tags=mongodb, mongo, loader
