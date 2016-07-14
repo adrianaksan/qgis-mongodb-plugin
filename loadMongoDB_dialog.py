@@ -10,6 +10,7 @@
 """
 
 import os, sys
+from qgis.gui import QgsMessageBar
 from PyQt4.Qt import *
 from PyQt4 import QtGui, uic
 from PyQt4 import QtCore, QtGui
@@ -20,7 +21,6 @@ from qgis.core import *
 import qgis.utils
 from PyQt4.QtCore import QVariant
 #from django.utils.encoding import smart_str, smart_unicode
-
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'loadMongoDB_dialog_base.ui'))
@@ -297,7 +297,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                 pass
 
         # define the dataLayer type as either Point, LineString or Polygon
-        self.dataLayer = QgsVectorLayer(self.geometry_name + '?crs=EPSG:4326', self.collection_name, "memory")
+        self.dataLayer = QgsVectorLayer(self.geometry_name, self.collection_name, "memory")
 
         # prepare the layer for the data we will be inputing
         self.dataLayer.startEditing()
@@ -333,11 +333,10 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                 self.ui.listCol.setEnabled(False)
 
 
-            if value[self.geom_name]["type"] == "LineString":
+            elif value[self.geom_name]["type"] == "LineString":
 
                 # used to store a list of poly lines
                 line_string = []
-                print value[self.geom_name]["type"]
 
                 # checks the geometry and only imports valid geometry
                 if self.check_valid_geom(value):
@@ -345,17 +344,11 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                     for y in range(len(value[self.geom_name]["coordinates"])):
 
                         # do not use unless needed, in case there is a multiLineString Object in the DB
-                        """
-                        if value["geometry"]["type"] != "LineString":
-                            pass
-
-                        else:
-                        """
 
                         try:
                             line_string.append(QgsPoint(value[self.geom_name]["coordinates"][y][0], value[self.geom_name]["coordinates"][y][1]))
                         except:
-                            print "error on %s: %s" %(str(value["_id"]), str(sys.exc_info()[0]))
+                            qgis.utils.iface.messageBar().pushMessage("Error", "Error loading Linestring on {}: {}".format(str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
 
                     self.populate_attributes(value)
                     self.feature.setGeometry(QgsGeometry.fromPolyline(line_string))
@@ -370,7 +363,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
 
             # this deals with Polygon geometry
-            if value[self.geom_name]["type"] == "Polygon":
+            elif value[self.geom_name]["type"] == "Polygon":
 
                 # store the polygon points
                 poly_shape = []
@@ -381,19 +374,21 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                 if self.check_valid_geom(value):
 
                     for y in range(len(value[self.geom_name]["coordinates"][0])):
+
                         try:
                             line_string.append(QgsPoint(value[self.geom_name]["coordinates"][0][y][0], value[self.geom_name]["coordinates"][0][y][1]))
                         except:
-                            print "error on %s: %s" %(str(value["_id"]), str(sys.exc_info()[0]))
+                            qgis.utils.iface.messageBar().pushMessage("Error", "Error loading Polygon {}: {}".format(str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
                             
                     poly_shape.append(line_string);
 
                     self.populate_attributes(value)
+
                     try:
                         ps = QgsGeometry.fromPolygon(poly_shape)
                         self.feature.setGeometry(ps)
                     except:
-                        print "error on %s: %s" %(str(value["_id"]), str(sys.exc_info()[0]))
+                        qgis.utils.iface.messageBar().pushMessage("Error", "Error on {}: {}".format(str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
                     
                     (res, outFeats) = self.dataLayer.dataProvider().addFeatures([self.feature])
                     del line_string[:]
@@ -406,33 +401,46 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                     self.ui.listCol.setEnabled(False)
 
             # this deals with Polygon geometry
-            if value[self.geom_name]["type"] == "MultiPolygon":
+            elif value[self.geom_name]["type"] == "MultiPolygon":
 
                 # store the polygon points
                 poly_shape = []
-                # store the line (a poly has multiple lines)
-                line_string = []
 
                 # checks the geometry and only imports valid geometry
                 if self.check_valid_geom(value):
 
-                    for polys in range(len(value[self.geom_name]["coordinates"])):
-                        for y in range(len(value[self.geom_name]["coordinates"][polys])):
-                            try:
-                                line_string.append(QgsPoint(value[self.geom_name]["coordinates"][polys][y][0], value[self.geom_name]["coordinates"][polys][y][1]))
-                            except:
-                                print "error on %s: %s" %(str(value["_id"]), str(sys.exc_info()[0]))
-                        poly_shape.append(line_string);
+                    multi_poly_shape = []
+
+                    for multi_shape in value[self.geom_name]["coordinates"]:
+
+                        for shape in multi_shape:
+
+                            each_shape = []
+
+                            for xy in shape:
+
+                                try:
+                                    each_shape.append(QgsPoint(xy[0], xy[1]))
+                                except:
+                                    qgis.utils.iface.messageBar().pushMessage("Error", "Error loading Multipolygon {}: {}".format(str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
+
+
+                        multi_poly_shape.append(each_shape)
+
+
+                    # final append at highest level
+                    poly_shape.append(multi_poly_shape)
 
                     self.populate_attributes(value)
                     try:
-                        ps = QgsGeometry.fromPolygon(poly_shape)
+                        ps = QgsGeometry.fromMultiPolygon(poly_shape)
                         self.feature.setGeometry(ps)
+
                     except:
-                        print "error on %s: %s" %(str(value["_id"]), str(sys.exc_info()[0]))
-                    
+                        qgis.utils.iface.messageBar().pushMessage("Error", "Error on {}: {}".format(str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
+
                     (res, outFeats) = self.dataLayer.dataProvider().addFeatures([self.feature])
-                    del line_string[:]
+
                     del poly_shape[:]
 
                     # update the progress bar
@@ -440,6 +448,8 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
                     self.ui.load_collection.setEnabled(False)
                     self.ui.listCol.setEnabled(False)
+            else:
+                qgis.utils.iface.messageBar().pushMessage("Error", "Failed to load geometry due to {} being unsupported".format(value[self.geom_name]["type"]), level=QgsMessageBar.CRITICAL)
                     
             self.ui.listCol.setEnabled(True)
 
@@ -517,11 +527,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
             elif len(key) is 2:
                 try:
-                    if value[str(key[0][0])][str(key[1][0])]:
-                        self.feature[index_pos] = str(value[str(key[0][0])][str(key[1][0])])
-                    else:
-                        self.feature[index_pos] = ""
-
+                    self.feature[index_pos] = str(value[str(key[0][0])][str(key[1][0])])
                     index_pos +=1
                 except:
                     index_pos +=1    
