@@ -148,7 +148,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
         try:
             # establish a link to the mongoDB server
-            self.client = MongoClient(str(server_name), 27017)
+            self.client = MongoClient(str(server_name))
         except Exception, e:
             QMessageBox.about(self, "Warning!", "Please select a server to connect to." + e.message)
             return
@@ -182,7 +182,6 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                     geom_type = self.data[geom_name]['type']
                 else:
                     geom_type = False
-
             except:
                 geom_type = False
 
@@ -191,7 +190,6 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
             # only display the collections with geometry
             if geom_type != False:
-
                 self.ui.listCol.insertTopLevelItem(count, details)
                 count += 1
 
@@ -292,7 +290,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
             else:
                 pass
-
+        QMessageBox.about(self, "Info", "Fields are"+ (', '.join(self.attr_list_new)))
         # define the dataLayer type as either Point, LineString or Polygon
         self.dataLayer = QgsVectorLayer(self.geometry_name, self.collection_name, "memory")
 
@@ -306,6 +304,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
         # our attribute container
         self.feature = QgsFeature()
+
         self.feature.initAttributes(len(self.attr_list_new))
 
         for value in self.ourList:
@@ -327,7 +326,6 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
                 self.ui.load_collection.setEnabled(False)
                 self.ui.listCol.setEnabled(False)
-
 
             elif value[self.geom_name]["type"] == "LineString":
 
@@ -360,7 +358,6 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
                 self.ui.load_collection.setEnabled(False)
                 self.ui.listCol.setEnabled(False)
-
 
             # this deals with Polygon geometry
             elif value[self.geom_name]["type"] == "Polygon":

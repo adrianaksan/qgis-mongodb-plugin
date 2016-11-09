@@ -180,7 +180,7 @@ class loadMongoDB:
     def button_clicked(self):
         self.dlg.ui.load_field.clear()
         if len(self.dlg.ui.dbName.currentText()) != 0 and len(self.dlg.ui.serverName.currentText()) != 0 and len(self.dlg.ui.geom_field.currentText()) != 0:
-            self.dlg.ui.groupBox.setTitle(str(self.dlg.ui.serverName.currentText()).upper())
+            # self.dlg.ui.groupBox.setTitle(str(self.dlg.ui.serverName.currentText()).upper())
             self.dlg.show_mdb_collection(self.dlg.ui.dbName.currentText(), self.dlg.ui.serverName.currentText(), self.dlg.ui.geom_field.currentText())
             self.save_server_cache()
 
