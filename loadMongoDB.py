@@ -163,45 +163,33 @@ class loadMongoDB:
         server = self.dlg.ui.serverName.currentText().strip()
         db = self.dlg.ui.dbName.currentText().strip()
         geom = self.dlg.ui.geom_field.currentText().strip()
+        query = self.dlg.ui.query_field.currentText().strip()
 
         if len(server) == 0 or len(db) == 0 or len(geom) == 0:
             return
 
-        if server not in self.user_details["servers"]:
-            self.user_details["servers"].append(server)
+        for field, value in {'servers': server, 'db': db, 'geom': geom, 'query': query}.items():
+            if value not in self.user_details[field]:
+                self.user_details[field].append(value)
 
-        if db not in self.user_details["db"]:
-            self.user_details["db"].append(db)
-
-        if geom not in self.user_details["geom"]:
-            self.user_details["geom"].append(geom)
 
         json.dump(self.user_details, open(str(os.path.abspath(__file__ + "/../../")) + "/qgis-mongodb-loader/cache.txt",'w'))
 
 
     # attempt a connection to the server when the user presses "CONNECT"
     def button_clicked(self):
-
         self.dlg.ui.load_field.clear()
-
         if len(self.dlg.ui.dbName.currentText()) != 0 and len(self.dlg.ui.serverName.currentText()) != 0 and len(self.dlg.ui.geom_field.currentText()) != 0:
-
             self.dlg.ui.groupBox.setTitle(str(self.dlg.ui.serverName.currentText()).upper())
-
             self.dlg.show_mdb_collection(self.dlg.ui.dbName.currentText(), self.dlg.ui.serverName.currentText(), self.dlg.ui.geom_field.currentText())
-
             self.save_server_cache()
 
 
     # attempt to load the collection when the user presses "LOAD"
     def on_click_check(self):
-
         self.user_details["checkbox"] = self.dlg.ui.checkBox.isChecked()
-
         if len(self.dlg.ui.dbName.currentText()) != 0 and len(self.dlg.ui.serverName.currentText()) != 0 and len(self.dlg.ui.geom_field.currentText()) != 0:
-
             self.dlg.on_click_load()
-
             self.save_server_cache()
 
 
@@ -210,9 +198,10 @@ class loadMongoDB:
 
         try:
             self.user_details = json.load(open(str(os.path.abspath(__file__ + "/../../")) + "/qgis-mongodb-loader/cache.txt"))
-
+            if 'query' not in self.user_details:
+                self.user_details['query'] = []
         except:
-            self.user_details = {"geom": [], "db": [], "checkbox": False, "servers": []}
+            self.user_details = {"geom": [], "db": [], "checkbox": False, "servers": [], 'query': []}
 
 
     #
@@ -224,14 +213,17 @@ class loadMongoDB:
         server_name_list = self.user_details["servers"]
         db_name_list = self.user_details["db"]
         geom_name_list = self.user_details["geom"]
+        query_name_list = self.user_details.get('query', [])
 
         self.dlg.ui.serverName.clear()
         self.dlg.ui.dbName.clear()
         self.dlg.ui.geom_field.clear()
+        self.dlg.ui.query_field.clear()
 
         self.dlg.ui.serverName.addItems(list(set(server_name_list)))
         self.dlg.ui.dbName.addItems(list(set(db_name_list)))
         self.dlg.ui.geom_field.addItems(list(set(geom_name_list)))
+        self.dlg.ui.query_field.addItems(list(set(query_name_list)))
 
 
     def initGui(self):
@@ -246,13 +238,9 @@ class loadMongoDB:
             parent=self.iface.mainWindow())
 
         QObject.connect(self.dlg.ui.load_collection, SIGNAL("clicked()"), self.on_click_check)
-
         QObject.connect(self.dlg.ui.createFile, SIGNAL("clicked()"), self.button_clicked)
-
         QObject.connect(self.dlg.ui.view_button, SIGNAL("clicked()"), self.dlg.view_all_attributes)
-
         QObject.connect(self.dlg.ui.distinct_button, SIGNAL("clicked()"), self.dlg.view_distinct)
-
         QObject.connect(self.dlg.ui.set_button, SIGNAL("clicked()"), self.dlg.set_attribute)
 
         # the list will store the server details
