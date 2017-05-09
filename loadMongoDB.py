@@ -173,6 +173,9 @@ class loadMongoDB:
                 self.user_details[field].append(value)
 
 
+        if geom not in self.user_details["geom"]:
+            self.user_details["geom"].append(geom)
+
         json.dump(self.user_details, open(str(os.path.abspath(__file__ + "/../../")) + "/qgis-mongodb-loader/cache.txt",'w'))
 
 
@@ -200,6 +203,7 @@ class loadMongoDB:
             self.user_details = json.load(open(str(os.path.abspath(__file__ + "/../../")) + "/qgis-mongodb-loader/cache.txt"))
             if 'query' not in self.user_details:
                 self.user_details['query'] = []
+
         except:
             self.user_details = {"geom": [], "db": [], "checkbox": False, "servers": [], 'query': []}
 

@@ -21,8 +21,6 @@ from qgis.core import *
 import qgis.utils
 from PyQt4.QtCore import QVariant
 
-# from django.utils.encoding import smart_str, smart_unicode
-
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'loadMongoDB_dialog_base.ui'))
 
@@ -343,10 +341,8 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                             line_string.append(QgsPoint(value[self.geom_name]["coordinates"][y][0],
                                                         value[self.geom_name]["coordinates"][y][1]))
                         except:
-                            qgis.utils.iface.messageBar().pushMessage("Error",
-                                                                      "Error loading Linestring on {}: {}".format(
-                                                                          str(value["_id"]), str(sys.exc_info()[0])),
-                                                                      level=QgsMessageBar.CRITICAL)
+                          
+                            qgis.utils.iface.messageBar().pushMessage("Error", "Error loading Linestring on {}: {}".format(str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
 
                     self.populate_attributes(value)
                     self.feature.setGeometry(QgsGeometry.fromPolyline(line_string))
@@ -376,9 +372,9 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                             line_string.append(QgsPoint(value[self.geom_name]["coordinates"][0][y][0],
                                                         value[self.geom_name]["coordinates"][0][y][1]))
                         except:
-                            qgis.utils.iface.messageBar().pushMessage("Error", "Error loading Polygon {}: {}".format(
-                                str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
 
+                            qgis.utils.iface.messageBar().pushMessage("Error", "Error loading Polygon {}: {}".format(str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
+                            
                     poly_shape.append(line_string);
 
                     self.populate_attributes(value)
@@ -387,11 +383,9 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                         ps = QgsGeometry.fromPolygon(poly_shape)
                         self.feature.setGeometry(ps)
                     except:
-                        qgis.utils.iface.messageBar().pushMessage("Error", "Error on {}: {}".format(str(value["_id"]),
-                                                                                                    str(sys.exc_info()[
-                                                                                                            0])),
-                                                                  level=QgsMessageBar.CRITICAL)
 
+                        qgis.utils.iface.messageBar().pushMessage("Error", "Error on {}: {}".format(str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
+                    
                     (res, outFeats) = self.dataLayer.dataProvider().addFeatures([self.feature])
                     del line_string[:]
                     del poly_shape[:]
@@ -424,14 +418,11 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                                 try:
                                     each_shape.append(QgsPoint(xy[0], xy[1]))
                                 except:
-                                    qgis.utils.iface.messageBar().pushMessage("Error",
-                                                                              "Error loading Multipolygon {}: {}".format(
-                                                                                  str(value["_id"]),
-                                                                                  str(sys.exc_info()[0])),
-                                                                              level=QgsMessageBar.CRITICAL)
+                                    qgis.utils.iface.messageBar().pushMessage("Error", "Error loading Multipolygon {}: {}".format(str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
+
 
                         multi_poly_shape.append(each_shape)
-
+                        
                     # final append at highest level
                     poly_shape.append(multi_poly_shape)
 
@@ -441,10 +432,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                         self.feature.setGeometry(ps)
 
                     except:
-                        qgis.utils.iface.messageBar().pushMessage("Error", "Error on {}: {}".format(str(value["_id"]),
-                                                                                                    str(sys.exc_info()[
-                                                                                                            0])),
-                                                                  level=QgsMessageBar.CRITICAL)
+                        qgis.utils.iface.messageBar().pushMessage("Error", "Error on {}: {}".format(str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
 
                     (res, outFeats) = self.dataLayer.dataProvider().addFeatures([self.feature])
 
@@ -456,11 +444,9 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                     self.ui.load_collection.setEnabled(False)
                     self.ui.listCol.setEnabled(False)
             else:
-                qgis.utils.iface.messageBar().pushMessage("Error",
-                                                          "Failed to load geometry due to {} being unsupported".format(
-                                                              value[self.geom_name]["type"]),
-                                                          level=QgsMessageBar.CRITICAL)
-
+              
+                qgis.utils.iface.messageBar().pushMessage("Error", "Failed to load geometry due to {} being unsupported".format(value[self.geom_name]["type"]), level=QgsMessageBar.CRITICAL)
+                
             self.ui.listCol.setEnabled(True)
 
         # commits the changes made to the layer and adds the layer to the map
