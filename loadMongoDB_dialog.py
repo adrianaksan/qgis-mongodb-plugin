@@ -20,11 +20,9 @@ from ui_loadMongoDB_dialog_base import Ui_loadMongoDBDialogBase
 from qgis.core import *
 import qgis.utils
 from PyQt4.QtCore import QVariant
-#from django.utils.encoding import smart_str, smart_unicode
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'loadMongoDB_dialog_base.ui'))
-
 
 # test requirements
 try:
@@ -84,7 +82,6 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
         self.ui.load_collection.setEnabled(False)
 
-
     def view_all_attributes(self):
 
         # reset the list count and clear the list
@@ -95,18 +92,15 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
         data = self.collection.find_one()
 
         for key in data.keys():
-
             attribute = QListWidgetItem(key)
             self.ui.view_all.insertItem(count, attribute)
 
-            count+=1
-
+            count += 1
 
     def row_select(self, item):
 
         self.ui.distinct_button.setEnabled(True)
         self.selected_attribute = item.text()
-
 
     def view_distinct(self):
 
@@ -128,14 +122,12 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
             return
 
         for key in self.list_distinct:
-
             attribute = QListWidgetItem(str(key))
             self.ui.view_distinct.insertItem(count, attribute)
 
-            count+=1
+            count += 1
 
         self.ui.set_button.setEnabled(True)
-
 
     def set_attribute(self):
 
@@ -143,7 +135,6 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
         self.ui.load_field.addItems(list(set(self.list_distinct)))
         self.key = self.selected_attribute
         self.ui.checkBox.setCheckable(True)
-
 
     # this is a GUI function for displaying all collections/ details found in the DB
     def show_mdb_collection(self, db_name, server_name, geom_name):
@@ -155,9 +146,9 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
         try:
             # establish a link to the mongoDB server
-            self.client = MongoClient(str(server_name), 27017, serverSelectionTimeoutMS=500)
-        except:
-            QMessageBox.about(self, "Warning!", "Please select a server to connect to.")
+            self.client = MongoClient(str(server_name))
+        except Exception, e:
+            QMessageBox.about(self, "Warning!", "Please select a server to connect to." + e.message)
             return
 
         # db name passed on from the user's input
@@ -187,10 +178,8 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
             try:
                 if self.data[geom_name]:
                     geom_type = self.data[geom_name]['type']
-
                 else:
                     geom_type = False
-
             except:
                 geom_type = False
 
@@ -199,7 +188,6 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
             # only display the collections with geometry
             if geom_type != False:
-
                 self.ui.listCol.insertTopLevelItem(count, details)
                 count += 1
 
@@ -219,7 +207,6 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
         self.ui.load_field.clear()
         self.ui.checkBox.setCheckable(0)
 
-
     def select_item(self, item, column):
 
         self.reset_all()
@@ -229,7 +216,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
         # the geometry of the collection
         self.geometry_name = str(item.text(1))
         # divide the collection count to percentages for the progress bar
-        self.percent = 100/float(item.text(2))
+        self.percent = 100 / float(item.text(2))
 
         # load the selected collection into a list
         self.collection = self.db[self.collection_name]
@@ -237,7 +224,6 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
         # enables the load button when an item is selected from the list
         self.ui.load_collection.setEnabled(True)
         self.ui.view_button.setEnabled(True)
-
 
     def on_click_load(self):
 
@@ -257,11 +243,19 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
             self.ourList = self.collection.find({self.key: load_key})
 
         else:
-            self.ourList = self.collection.find()
-
+            query_text = self.ui.query_field.currentText().strip()
+            if query_text == '':
+                query = {}
+            else:
+                query = ast.literal_eval(query_text)
+                if type(query) is not dict:
+                    QMessageBox.about(self, "Warning!", "Query must be a dict!")
+                    return
+            self.ourList = self.collection.find(query)
+        self.percent = 100 / float(self.ourList.count())
         # get the first level of attributes, we can modify which fields we want to use
-        self.single_return = self.collection.find_one({}, {'geom':0, 'fibres': 0, 'date': 0})
-        #{} , {"geom": 1}
+        self.single_return = self.collection.find_one({}, {'geom': 0, 'fibres': 0, 'date': 0})
+        # {} , {"geom": 1}
         self.attr_list = self.single_return.keys()
 
         # list defined for the attributes table
@@ -284,9 +278,8 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
                 # search through the list of sub keys
                 for sub_key in sub_keys_list:
-
                     # structural code for ease of access later
-                    struct_sub = [attr],[sub_key]
+                    struct_sub = [attr], [sub_key]
 
                     # append the sub keys to our main list, define differences
                     self.attr_list_new.append(str(attr) + "." + str(sub_key))
@@ -295,7 +288,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
             else:
                 pass
-
+        QMessageBox.about(self, "Info", "Fields are"+ (', '.join(self.attr_list_new)))
         # define the dataLayer type as either Point, LineString or Polygon
         self.dataLayer = QgsVectorLayer(self.geometry_name, self.collection_name, "memory")
 
@@ -305,16 +298,16 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
         # create the shapefile attributes based on existing mongoDB field
         for attribute in (self.attr_list_new):
-            self.layerData.addAttributes([ QgsField(attribute, QVariant.String)])
+            self.layerData.addAttributes([QgsField(attribute, QVariant.String)])
 
         # our attribute container
         self.feature = QgsFeature()
+
         self.feature.initAttributes(len(self.attr_list_new))
-        
 
         for value in self.ourList:
-            #print value[self.geom_name]["type"]
-            
+            # print value[self.geom_name]["type"]
+
             # if the user has selected a collection with point geometry
             if value[self.geom_name]["type"] == "Point":
 
@@ -332,7 +325,6 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                 self.ui.load_collection.setEnabled(False)
                 self.ui.listCol.setEnabled(False)
 
-
             elif value[self.geom_name]["type"] == "LineString":
 
                 # used to store a list of poly lines
@@ -346,8 +338,10 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                         # do not use unless needed, in case there is a multiLineString Object in the DB
 
                         try:
-                            line_string.append(QgsPoint(value[self.geom_name]["coordinates"][y][0], value[self.geom_name]["coordinates"][y][1]))
+                            line_string.append(QgsPoint(value[self.geom_name]["coordinates"][y][0],
+                                                        value[self.geom_name]["coordinates"][y][1]))
                         except:
+                          
                             qgis.utils.iface.messageBar().pushMessage("Error", "Error loading Linestring on {}: {}".format(str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
 
                     self.populate_attributes(value)
@@ -360,7 +354,6 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
                 self.ui.load_collection.setEnabled(False)
                 self.ui.listCol.setEnabled(False)
-
 
             # this deals with Polygon geometry
             elif value[self.geom_name]["type"] == "Polygon":
@@ -376,8 +369,10 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                     for y in range(len(value[self.geom_name]["coordinates"][0])):
 
                         try:
-                            line_string.append(QgsPoint(value[self.geom_name]["coordinates"][0][y][0], value[self.geom_name]["coordinates"][0][y][1]))
+                            line_string.append(QgsPoint(value[self.geom_name]["coordinates"][0][y][0],
+                                                        value[self.geom_name]["coordinates"][0][y][1]))
                         except:
+
                             qgis.utils.iface.messageBar().pushMessage("Error", "Error loading Polygon {}: {}".format(str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
                             
                     poly_shape.append(line_string);
@@ -388,6 +383,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                         ps = QgsGeometry.fromPolygon(poly_shape)
                         self.feature.setGeometry(ps)
                     except:
+
                         qgis.utils.iface.messageBar().pushMessage("Error", "Error on {}: {}".format(str(value["_id"]), str(sys.exc_info()[0])), level=QgsMessageBar.CRITICAL)
                     
                     (res, outFeats) = self.dataLayer.dataProvider().addFeatures([self.feature])
@@ -426,8 +422,7 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
 
                         multi_poly_shape.append(each_shape)
-
-
+                        
                     # final append at highest level
                     poly_shape.append(multi_poly_shape)
 
@@ -449,8 +444,9 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
                     self.ui.load_collection.setEnabled(False)
                     self.ui.listCol.setEnabled(False)
             else:
+              
                 qgis.utils.iface.messageBar().pushMessage("Error", "Failed to load geometry due to {} being unsupported".format(value[self.geom_name]["type"]), level=QgsMessageBar.CRITICAL)
-                    
+                
             self.ui.listCol.setEnabled(True)
 
         # commits the changes made to the layer and adds the layer to the map
@@ -458,32 +454,25 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
 
         # the path we will be writing to is the plugin folder dependant on the layer name
         write_to = str(os.path.abspath(__file__ + "/../../")) + "/" + str(self.collection_name) + ".shp"
-        write_error = QgsVectorFileWriter.writeAsVectorFormat(self.dataLayer, write_to, "system", self.dataLayer.crs(), "ESRI Shapefile")
+        write_error = QgsVectorFileWriter.writeAsVectorFormat(self.dataLayer, write_to, "system", self.dataLayer.crs(),
+                                                              "ESRI Shapefile")
         self.dataLayer = QgsVectorLayer(write_to, self.collection_name, "ogr")
         QgsMapLayerRegistry.instance().addMapLayer(self.dataLayer)
 
-
     # check for valid geometry
     def check_valid_geom(self, value):
-
         if value.has_key(self.geom_name):
-
             if value[self.geom_name].has_key("coordinates"):
-
                 if len(value[self.geom_name]["coordinates"]) != 0:
-
                     return True
-
             return False
-
         return False
-
 
     def event_progress(self):
 
         # convert to an integer for the progress bar
         self.counter = self.counter + self.percent
-        self.step = int(self.counter) +1
+        self.step = int(self.counter) + 1
 
         # set the updated values in the progress bar and process the event
         self.ui.progressBar.setValue(self.step)
@@ -493,44 +482,31 @@ class loadMongoDBDialog(QtGui.QDialog, FORM_CLASS):
         if self.step >= 100:
             self.ui.progressBar.setValue(0)
 
-
     # populate keys and sub-keys
     def populate_attributes(self, value):
-
         index_pos = 0
-
         for key in self.attr_list_structure:
-
             if len(key) is 1:
-
                 # this caters for the new data model where the status is a subkey
                 if key[0] == "status":
-
                     try:
                         stat_list = list(value[str(key[0])])
                         formatted = stat_list[-1]["label"]
-
                         self.feature[index_pos] = str(formatted)
                     except:
                         pass
-
                     index_pos += 1
-
                 else:
-
                     try:
                         self.feature[index_pos] = str(value[str(key[0])])
                         index_pos += 1
-
                     except:
                         index_pos += 1
-
             elif len(key) is 2:
                 try:
                     self.feature[index_pos] = str(value[str(key[0][0])][str(key[1][0])])
-                    index_pos +=1
+                    index_pos += 1
                 except:
-                    index_pos +=1    
-
+                    index_pos += 1
             else:
                 pass
